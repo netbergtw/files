@@ -211,6 +211,16 @@ function _i2c_init {
         echo "${PATH_MAIN_MUX_CHAN0_DEVICE} 0x72 already init."
     fi
 
+    # Need to set idle_state since Debian 11 (кernel 5.10)
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_I801_DEVICE}-0070/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_MUX_CHAN0_DEVICE}-0071/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_MUX_CHAN1_DEVICE}-0071/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_MUX_CHAN2_DEVICE}-0071/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_MUX_CHAN3_DEVICE}-0071/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_MUX_CHAN6_DEVICE}-0071/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_I801_DEVICE}-0076/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_I801_DEVICE}-0072/idle_state
+
     rmmod coretemp
     rmmod jc42
     rmmod w83795
