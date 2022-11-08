@@ -99,7 +99,7 @@ rov_val_array=( 0.85 0.82 0.77 0.87 0.74 0.84 0.79 0.89 )
 rov_reg_array=( 0x24 0x21 0x1c 0x26 0x19 0x23 0x1e 0x28 )
 
 #GPIO Offset
-GPIO_OFFSET=768
+GPIO_OFFSET=256
 
 # Help usage function
 function _help {
@@ -212,14 +212,14 @@ function _i2c_init {
     fi
 
     # Need to set idle_state since Debian 11 (кernel 5.10)
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_I801_DEVICE}-0070/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_MUX_CHAN0_DEVICE}-0071/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_MUX_CHAN1_DEVICE}-0071/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_MUX_CHAN2_DEVICE}-0071/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_MUX_CHAN3_DEVICE}-0071/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_MUX_CHAN6_DEVICE}-0071/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_I801_DEVICE}-0076/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${PATH_I801_DEVICE}-0072/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_I801_DEVICE}-0070/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_MUX1_CHAN0_DEVICE}-0071/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_MUX1_CHAN1_DEVICE}-0071/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_MUX1_CHAN2_DEVICE}-0071/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_MUX1_CHAN3_DEVICE}-0071/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_MUX1_CHAN6_DEVICE}-0071/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_I801_DEVICE}-0076/idle_state
+    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_I801_DEVICE}-0072/idle_state
 
     rmmod coretemp
     rmmod jc42
