@@ -41,4 +41,6 @@ Agree to a weak password (onie/onie is the default user/password).
 
 ## Model dependent steps:
 
-See the appropriate folder for instructions for specific models.
+See the appropriate folder for instructions for specific models:
+
+- [Aurora 710](aurora-710/README.md)
