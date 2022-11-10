@@ -1,9 +1,9 @@
-= Installing i2c_utils.sh
+# Installing i2c_utils.sh
 ```bash
  wget https://github.com/netbergtw/files/raw/master/debian-bsps/aurora-710/i2c_utils.sh -O /usr/sbin/i2c_utils.sh
  chmod +x /usr/sbin/i2c_utils.sh
 ```
-= Init the switch
+# Init the switch
 ```bash
  apt install --install-recommends linux-generic-hwe-20.04
  git clone https://github.com/sonic-net/sonic-buildimage.git --branch master --single-branch
