@@ -20,13 +20,14 @@ Agree to a weak password (onie/onie is the default user/password).
 
 ## Update repos and install the latest kernel:
 ```bash
- apt update
- apt upgrade
- apt install --install-recommends linux-generic-hwe-20.04
+ sudo apt update
+ sudo apt upgrade
+ sudo apt install --install-recommends linux-generic-hwe-20.04
+ sudo reboot
 ```
 ## Install additional components:
 ```bash
- apt install openssh-server build-essential git i2c-tools
+ sudo apt install openssh-server build-essential git i2c-tools
 ```
 ## Build optoe driver
 ```bash
@@ -35,8 +36,8 @@ Agree to a weak password (onie/onie is the default user/password).
  echo "ccflags-y := -DLATEST_KERNEL" > Makefile
  echo "obj-m := optoe.o" >> Makefile
  make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
- make -C /lib/modules/$(uname -r)/build M=$(pwd) modules_install
- depmod
+ sudo make -C /lib/modules/$(uname -r)/build M=$(pwd) modules_install
+ sudo depmod
 ```
 
 ## Model dependent steps:
