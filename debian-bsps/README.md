@@ -45,3 +45,4 @@ Agree to a weak password (onie/onie is the default user/password).
 See the appropriate folder for instructions for specific models:
 
 - [Aurora 710](aurora-710/README.md)
+- [Aurora 610](aurora-610/README.md)
