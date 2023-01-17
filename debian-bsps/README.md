@@ -13,6 +13,16 @@ Install OS with the `onie-nos-install` command from a remote or local source (do
 
 ## During installation
 
+**Please unplug the USB drive if inserted** or follow debian-preseed.txt
+
+```
+ # Due notably to potential USB sticks, the location of the MBR can not be
+ # determined safely in general, so this needs to be specified:
+ #d-i grub-installer/bootdev  string /dev/sdb
+ # To install to the first device (assuming it is not a USB stick):
+ d-i grub-installer/bootdev  string default
+```
+
 Select the proper network device: e.g. enp8s0: Intel Corporation I210 Gigabit Network Connection.
 Agree to a weak password (onie/onie is the default user/password).
 
