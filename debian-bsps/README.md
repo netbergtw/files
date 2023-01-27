@@ -4,7 +4,9 @@ We are going through a standard ONIE procedure.
 
 Please refer to https://netbergtw.com/top-support/articles/onie-recovery-on-x86-enabled-netberg-aurora-switches/ if ONIE is missing.
 
-You can [make your own ONIE image](https://github.com/opencomputeproject/onie/blob/master/contrib/debian-iso/README.md) with the preseed file or get a ready to use Ubuntu 20.04 [image](http://www.netbergtw.com/wp-content/uploads/Files/ubuntu-focal-amd64-mini-ONIE.bin) and [preseed](http://www.netbergtw.com/wp-content/uploads/Files/debian-preseed.txt):
+You can [make your own ONIE image](https://github.com/opencomputeproject/onie/blob/master/contrib/debian-iso/README.md) 
+with the preseed file or get a ready to use Ubuntu 20.04 [image](http://www.netbergtw.com/wp-content/uploads/Files/ubuntu-focal-amd64-mini-ONIE.bin) 
+and [preseed](debian-preseed.txt):
 
 Install OS with the `onie-nos-install` command from a remote or local source (don’t forget to put debian-preseed.txt near the image).
 ```bash
