@@ -123,6 +123,10 @@ else
     INIT_ERROR="TRUE"
 fi
 
+for ((i=1;i<=48;i++));
+do
+    echo port$i > /sys/bus/i2c/devices/$(($i+9))-0050/port_name
+done
 
 # Attach 6 instances of EEPROM driver QSFP ports on IO module
 #eeprom can dump data using below command
@@ -136,6 +140,15 @@ else
     echo "i2c-8 error" >> /dev/kmsg
     INIT_ERROR="TRUE"
 fi
+
+echo port50 > /sys/bus/i2c/devices/58-0050/port_name
+echo port49 > /sys/bus/i2c/devices/59-0050/port_name
+echo port52 > /sys/bus/i2c/devices/60-0050/port_name
+echo port51 > /sys/bus/i2c/devices/61-0050/port_name
+echo port54 > /sys/bus/i2c/devices/62-0050/port_name
+echo port53 > /sys/bus/i2c/devices/63-0050/port_name
+echo port56 > /sys/bus/i2c/devices/64-0050/port_name
+echo port55 > /sys/bus/i2c/devices/65-0050/port_name
 
 if [ $INIT_ERROR != "TRUE" ]
 then

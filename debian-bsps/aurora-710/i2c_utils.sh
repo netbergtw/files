@@ -1023,6 +1023,40 @@ function _i2c_qsfp_eeprom_init {
             echo "$eepromAddr" > ${PATH_SYS_I2C_DEVICES}/i2c-$eeprombus/delete_device
         fi
     done
+    if [ "${action}" == "new" ]
+        port2 > /sys/bus/i2c/devices/9-0050/port_name
+        port1 > /sys/bus/i2c/devices/10-0050/port_name
+        port4 > /sys/bus/i2c/devices/11-0050/port_name
+        port3 > /sys/bus/i2c/devices/12-0050/port_name
+        port6 > /sys/bus/i2c/devices/13-0050/port_name
+        port5 > /sys/bus/i2c/devices/14-0050/port_name
+        port8 > /sys/bus/i2c/devices/15-0050/port_name
+        port7 > /sys/bus/i2c/devices/16-0050/port_name
+        port10 > /sys/bus/i2c/devices/17-0050/port_name
+        port9 > /sys/bus/i2c/devices/18-0050/port_name
+        port12 > /sys/bus/i2c/devices/19-0050/port_name
+        port11 > /sys/bus/i2c/devices/20-0050/port_name
+        port14 > /sys/bus/i2c/devices/21-0050/port_name
+        port13 > /sys/bus/i2c/devices/22-0050/port_name
+        port16 > /sys/bus/i2c/devices/23-0050/port_name
+        port15 > /sys/bus/i2c/devices/24-0050/port_name
+        port18 > /sys/bus/i2c/devices/25-0050/port_name
+        port17 > /sys/bus/i2c/devices/26-0050/port_name
+        port20 > /sys/bus/i2c/devices/27-0050/port_name
+        port19 > /sys/bus/i2c/devices/28-0050/port_name
+        port22 > /sys/bus/i2c/devices/29-0050/port_name
+        port21 > /sys/bus/i2c/devices/30-0050/port_name
+        port24 > /sys/bus/i2c/devices/31-0050/port_name
+        port23 > /sys/bus/i2c/devices/32-0050/port_name
+        port26 > /sys/bus/i2c/devices/33-0050/port_name
+        port25 > /sys/bus/i2c/devices/34-0050/port_name
+        port28 > /sys/bus/i2c/devices/35-0050/port_name
+        port27 > /sys/bus/i2c/devices/36-0050/port_name
+        port30 > /sys/bus/i2c/devices/37-0050/port_name
+        port29 > /sys/bus/i2c/devices/38-0050/port_name
+        port32 > /sys/bus/i2c/devices/39-0050/port_name
+        port31 > /sys/bus/i2c/devices/40-0050/port_name
+    fi
     echo "DONE"
 }
 
@@ -1117,6 +1151,8 @@ function _i2c_sfp_eeprom_init {
         #echo "sff8436 0x50" > ${PATH_SYS_I2C_DEVICES}/i2c-${NUM_SFP2_DEVICE}/new_device
         echo "optoe1 0x50" > ${PATH_SYS_I2C_DEVICES}/i2c-${NUM_SFP1_DEVICE}/new_device
         echo "optoe1 0x50" > ${PATH_SYS_I2C_DEVICES}/i2c-${NUM_SFP2_DEVICE}/new_device
+	echo e1-33 > /sys/bus/i2c/devices/45-0050/port_name
+	echo e2-34 > /sys/bus/i2c/devices/46-0050/port_name
     elif [ "${action}" == "delete" ] && \
          [ -L ${PATH_SYS_I2C_DEVICES}/${NUM_SFP1_DEVICE}-0050 ] && \
          [ -L ${PATH_SYS_I2C_DEVICES}/${NUM_SFP2_DEVICE}-0050 ]; then

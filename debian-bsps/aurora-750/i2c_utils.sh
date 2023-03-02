@@ -1089,6 +1089,8 @@ function _i2c_qsfp_eeprom_init {
            ! [ -L ${PATH_SYS_I2C_DEVICES}/$eepromBus-$(printf "%04x" $eepromAddr) ]; then
             #echo "sff8436 $eepromAddr" > ${PATH_SYS_I2C_DEVICES}/i2c-$eepromBus/new_device
             echo "optoe1 $eepromAddr" > ${PATH_SYS_I2C_DEVICES}/i2c-$eepromBus/new_device
+	    echo "port$i" > /sys/bus/i2c/devices/$(($i+40))-0050/port_name
+
         elif [ "${action}" == "delete" ] && \
              [ -L ${PATH_SYS_I2C_DEVICES}/$eepromBus-$(printf "%04x" $eepromAddr) ]; then
             echo "$eepromAddr" > ${PATH_SYS_I2C_DEVICES}/i2c-$eepromBus/delete_device
@@ -1137,6 +1139,8 @@ function _i2c_sfp_eeprom_init {
            ! [ -L ${PATH_SYS_I2C_DEVICES}/$eepromBus-$(printf "%04x" $eepromAddr) ]; then
             #echo "sff8436 $eepromAddr" > ${PATH_SYS_I2C_DEVICES}/i2c-$eepromBus/new_device
             echo "optoe1 $eepromAddr" > ${PATH_SYS_I2C_DEVICES}/i2c-$eepromBus/new_device
+	    echo "e$i-$((64+$i))" > /sys/bus/i2c/devices/$(($i+28))-0050/port_name
+
         elif [ "${action}" == "delete" ] && \
              [ -L ${PATH_SYS_I2C_DEVICES}/$eepromBus-$(printf "%04x" $eepromAddr) ]; then
             echo "$eepromAddr" > ${PATH_SYS_I2C_DEVICES}/i2c-$eepromBus/delete_device
