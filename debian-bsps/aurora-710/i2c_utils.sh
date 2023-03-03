@@ -157,6 +157,17 @@ function _retry {
     done
 }
 
+function _set_mux_idle_state {
+    # set idle_state to -2 if idle_state present
+    # IDLE_STATE_DISCONNECT = -2
+    # IDLE_STATE_AS_IS = -1
+
+    local i2c_dev=$1
+    if [ -f "${i2c_dev}/mux_device/idle_state" ]; then
+        echo "-2" > ${i2c_dev}/mux_device/idle_state
+    fi
+}
+
 #I2C Init
 function _i2c_init {
     echo "========================================================="
@@ -167,59 +178,58 @@ function _i2c_init {
     rmmod i2c_i801
     modprobe i2c_i801
     modprobe i2c_dev
-    modprobe i2c_mux_pca954x force_deselect_on_exit=1
-    #modprobe cpld_wdt
+    modprobe i2c_mux_pca954x
+    modprobe optoe
 
     if [ ! -e "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX1_CHAN0_DEVICE}" ]; then
         _retry "echo 'pca9548 0x70' > ${PATH_I801_DEVICE}/new_device"
+        _set_mux_idle_state "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX1_CHAN0_DEVICE}"
     else
         echo "${PATH_I801_DEVICE} 0x70 already init."
     fi
     if [ ! -e "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX3_CHAN0_DEVICE}" ]; then
         _retry "echo 'pca9548 0x71' > ${PATH_MUX_CHAN0_DEVICE}/new_device"
+        _set_mux_idle_state "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX3_CHAN0_DEVICE}"
     else
         echo "${PATH_MUX_CHAN0_DEVICE} 0x71 already init."
     fi
     if [ ! -e "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX4_CHAN0_DEVICE}" ]; then
         _retry "echo 'pca9548 0x71' > ${PATH_MUX_CHAN1_DEVICE}/new_device"
+        _set_mux_idle_state "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX4_CHAN0_DEVICE}"
     else
         echo "${PATH_MUX_CHAN1_DEVICE} 0x71 already init."
     fi
     if [ ! -e "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX5_CHAN0_DEVICE}" ]; then
         _retry "echo 'pca9548 0x71' > ${PATH_MUX_CHAN2_DEVICE}/new_device"
+        _set_mux_idle_state "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX5_CHAN0_DEVICE}"
     else
         echo "${PATH_MUX_CHAN2_DEVICE} 0x71 already init."
     fi
     if [ ! -e "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX6_CHAN0_DEVICE}" ]; then
         _retry "echo 'pca9548 0x71' > ${PATH_MUX_CHAN3_DEVICE}/new_device"
+        _set_mux_idle_state "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX6_CHAN0_DEVICE}"
     else
         echo "${PATH_MUX_CHAN3_DEVICE} 0x71 already init."
     fi
     if [ ! -e "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX7_CHAN0_DEVICE}" ]; then
         _retry "echo 'pca9548 0x71' > ${PATH_MUX_CHAN6_DEVICE}/new_device"
+        _set_mux_idle_state "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MUX7_CHAN0_DEVICE}"
     else
         echo "${PATH_MUX_CHAN6_DEVICE} 0x71 already init."
     fi
     if [ ! -e "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MAIN_MUX_CHAN0_DEVICE}" ]; then
         _retry "echo 'pca9548 0x76' > ${PATH_I801_DEVICE}/new_device"
+        _set_mux_idle_state "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_MAIN_MUX_CHAN0_DEVICE}"
     else
         echo "${PATH_MAIN_MUX_CHAN0_DEVICE} 0x76 already init."
     fi
     if [ ! -e "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_FRU_MUX_CHAN0_DEVICE}" ]; then
         _retry "echo 'pca9545 0x72' > ${PATH_I801_DEVICE}/new_device"
+        _set_mux_idle_state "${PATH_SYS_I2C_DEVICES}/i2c-${NUM_FRU_MUX_CHAN0_DEVICE}"
     else
         echo "${PATH_MAIN_MUX_CHAN0_DEVICE} 0x72 already init."
     fi
 
-    # Need to set idle_state since Debian 11 (кernel 5.10)
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_I801_DEVICE}-0070/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_MUX1_CHAN0_DEVICE}-0071/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_MUX1_CHAN1_DEVICE}-0071/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_MUX1_CHAN2_DEVICE}-0071/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_MUX1_CHAN3_DEVICE}-0071/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_MUX1_CHAN6_DEVICE}-0071/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_I801_DEVICE}-0076/idle_state
-    echo '-2' > ${PATH_SYS_I2C_DEVICES}/${NUM_I801_DEVICE}-0072/idle_state
 
     rmmod coretemp
     rmmod jc42
@@ -499,11 +509,26 @@ function _i2c_fan_init {
     echo "Done"
 }
 
+# To set the global variable GPIO_OFFSET
+function _set_gpio_offset {
+    GPIO_OFFSET=0
+    for d in `ls /sys/class/gpio/ | grep gpiochip`
+    do
+        gpiochip_no=${d##gpiochip}
+        if [ $gpiochip_no -gt 255 ]; then
+            GPIO_OFFSET=256
+            break
+        fi
+    done
+    #echo "set GPIO_OFFSET=${GPIO_OFFSET}"
+}
+
 #GPIO Init
 function _i2c_gpio_init {
     local i=0
     #ABS Port 0-15
-    echo "pca9555 0x20" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
+    echo "pca9535 0x20" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
+    _set_gpio_offset
     #for i in {240..255};
     for((i=${GPIO_OFFSET}+240;i<=${GPIO_OFFSET}+255;i++));
     do
@@ -512,7 +537,7 @@ function _i2c_gpio_init {
     done
 
     #ABS Port 16-31
-    echo "pca9555 0x21" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
+    echo "pca9535 0x21" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
     #for i in {224..239};
     for((i=${GPIO_OFFSET}+224;i<=${GPIO_OFFSET}+239;i++));
     do
@@ -521,7 +546,7 @@ function _i2c_gpio_init {
     done
 
     #INT Port 0-15
-    echo "pca9555 0x22" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
+    echo "pca9535 0x22" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
     #for i in {208..223};
     for((i=${GPIO_OFFSET}+208;i<=${GPIO_OFFSET}+223;i++));
     do
@@ -530,7 +555,7 @@ function _i2c_gpio_init {
     done
 
     #INT Port 16-31
-    echo "pca9555 0x23" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
+    echo "pca9535 0x23" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
     #for i in {192..207};
     for((i=${GPIO_OFFSET}+192;i<=${GPIO_OFFSET}+207;i++));
     do
@@ -539,19 +564,15 @@ function _i2c_gpio_init {
     done
 
     #SFP+
-    echo "pca9555 0x27" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
+    echo "pca9535 0x27" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
     #for i in {176..191};
     for((i=${GPIO_OFFSET}+176;i<=${GPIO_OFFSET}+191;i++));
     do
         echo $i > /sys/class/gpio/export
         case ${i} in
-            #176|177|178|179|182|183|188|189|190|191)
+            #176|177|188|189|190|191)
             $((${GPIO_OFFSET}+176)) | \
             $((${GPIO_OFFSET}+177)) | \
-            $((${GPIO_OFFSET}+178)) | \
-            $((${GPIO_OFFSET}+179)) | \
-            $((${GPIO_OFFSET}+182)) | \
-            $((${GPIO_OFFSET}+183)) | \
             $((${GPIO_OFFSET}+188)) | \
             $((${GPIO_OFFSET}+189)) | \
             $((${GPIO_OFFSET}+190)) | \
@@ -568,7 +589,6 @@ function _i2c_gpio_init {
                 echo out > /sys/class/gpio/gpio${i}/direction
             ;;
         esac
-    
     done
     #echo 176 > /sys/class/gpio/export
     #echo 177 > /sys/class/gpio/export
@@ -604,7 +624,7 @@ function _i2c_gpio_init {
     #echo 1 > /sys/class/gpio/gpio191/active_low #N/A
 
     #LP Mode Port 0-15
-    echo "pca9555 0x20" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN5_DEVICE}/new_device
+    echo "pca9535 0x20" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN5_DEVICE}/new_device
     #for i in {160..175};
     for((i=${GPIO_OFFSET}+160;i<=${GPIO_OFFSET}+175;i++));
     do
@@ -613,7 +633,7 @@ function _i2c_gpio_init {
     done
 
     #LP Mode Port 16-31
-    echo "pca9555 0x21" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN5_DEVICE}/new_device
+    echo "pca9535 0x21" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN5_DEVICE}/new_device
     #for i in {144..159};
     for((i=${GPIO_OFFSET}+144;i<=${GPIO_OFFSET}+159;i++));
     do
@@ -622,31 +642,33 @@ function _i2c_gpio_init {
     done
 
     #RST Port 0-15
-    echo "pca9555 0x22" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN5_DEVICE}/new_device
+    echo "pca9535 0x22" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN5_DEVICE}/new_device
     #for i in {128..143};
     for((i=${GPIO_OFFSET}+128;i<=${GPIO_OFFSET}+143;i++));
     do
         echo $i > /sys/class/gpio/export
         echo 1 > /sys/class/gpio/gpio${i}/active_low
-        echo low > /sys/class/gpio/gpio${i}/direction
-        #echo out > /sys/class/gpio/gpio${i}/direction
-        #echo 0 > /sys/class/gpio/gpio${i}/value
+        # value low for direction not official support
+        #echo low > /sys/class/gpio/gpio${i}/direction
+        echo out > /sys/class/gpio/gpio${i}/direction
+        echo 0 > /sys/class/gpio/gpio${i}/value
     done
 
     #RST Port 16-31
-    echo "pca9555 0x23" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN5_DEVICE}/new_device
+    echo "pca9535 0x23" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN5_DEVICE}/new_device
     #for i in {112..127};
     for((i=${GPIO_OFFSET}+112;i<=${GPIO_OFFSET}+127;i++));
     do
         echo $i > /sys/class/gpio/export
         echo 1 > /sys/class/gpio/gpio${i}/active_low
-        echo low > /sys/class/gpio/gpio${i}/direction
-        #echo out > /sys/class/gpio/gpio${i}/direction
-        #echo 0 > /sys/class/gpio/gpio${i}/value
+        # value low for direction not official support
+        #echo low > /sys/class/gpio/gpio${i}/direction
+        echo out > /sys/class/gpio/gpio${i}/direction
+        echo 0 > /sys/class/gpio/gpio${i}/value
     done
     
     #PSU I/O on Dummy Board 0x25
-    echo "pca9555 0x25" > /sys/bus/i2c/devices/i2c-${NUM_I801_DEVICE}/new_device
+    echo "pca9535 0x25" > /sys/bus/i2c/devices/i2c-${NUM_I801_DEVICE}/new_device
     #for i in {96..111};
     for((i=${GPIO_OFFSET}+96;i<=${GPIO_OFFSET}+111;i++));
     do
@@ -1629,7 +1651,8 @@ function _i2c_qsfp_ddm_get {
 function _main {
     start_time_str=`date`
     start_time_sec=$(date +%s)
-
+    
+    _set_gpio_offset
     if [ "${EXEC_FUNC}" == "help" ]; then
         _help
     elif [ "${EXEC_FUNC}" == "i2c_init" ]; then
@@ -1681,6 +1704,9 @@ function _main {
     elif [ "${EXEC_FUNC}" == "i2c_fan_led" ]; then
         _i2c_fan_led
     elif [ "${EXEC_FUNC}" == "i2c_fan_tray_led" ]; then
+        # covert input id index
+        fan_tray_index_array=( 0 4 3 2 1 )
+        FAN_TRAY=${fan_tray_index_array[$FAN_TRAY]}
         _i2c_fan_tray_led
     elif [ "${EXEC_FUNC}" == "i2c_psu1_led" ]; then
         _i2c_psu1_led
