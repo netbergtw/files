@@ -99,7 +99,7 @@ rov_val_array=( 0.85 0.82 0.77 0.87 0.74 0.84 0.79 0.89 )
 rov_reg_array=( 0x24 0x21 0x1c 0x26 0x19 0x23 0x1e 0x28 )
 
 #GPIO Offset
-GPIO_OFFSET=256
+GPIO_OFFSET=768
 
 # Help usage function
 function _help {
@@ -509,26 +509,11 @@ function _i2c_fan_init {
     echo "Done"
 }
 
-# To set the global variable GPIO_OFFSET
-function _set_gpio_offset {
-    GPIO_OFFSET=0
-    for d in `ls /sys/class/gpio/ | grep gpiochip`
-    do
-        gpiochip_no=${d##gpiochip}
-        if [ $gpiochip_no -gt 255 ]; then
-            GPIO_OFFSET=256
-            break
-        fi
-    done
-    #echo "set GPIO_OFFSET=${GPIO_OFFSET}"
-}
-
 #GPIO Init
 function _i2c_gpio_init {
     local i=0
     #ABS Port 0-15
     echo "pca9535 0x20" > /sys/bus/i2c/devices/i2c-${NUM_MUX1_CHAN4_DEVICE}/new_device
-    _set_gpio_offset
     #for i in {240..255};
     for((i=${GPIO_OFFSET}+240;i<=${GPIO_OFFSET}+255;i++));
     do
@@ -1652,7 +1637,6 @@ function _main {
     start_time_str=`date`
     start_time_sec=$(date +%s)
     
-    _set_gpio_offset
     if [ "${EXEC_FUNC}" == "help" ]; then
         _help
     elif [ "${EXEC_FUNC}" == "i2c_init" ]; then
