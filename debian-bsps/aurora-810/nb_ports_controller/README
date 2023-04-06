@@ -1,0 +1,23 @@
+# Port Controller
+
+## Usage
+
+### 1. enable thrift
+
+`./nb_port_controller -rpc`
+
+### 2. select unit test freqeuncy
+
+`./nb_port_controller loop <freq>`   , freq > 0  
+
+## Compiling rpc client alone
+
+```bash
+make docker  # Create once
+make attach
+export LD_LIBRARY_PATH=/usr/local/lib
+cd /nb_ports_controller
+make all  # TODO: Currently fpga is bundled with nb_ports_controller
+cd thrift
+make idl; make c_client;
+```
