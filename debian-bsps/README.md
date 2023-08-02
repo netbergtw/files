@@ -59,3 +59,4 @@ See the appropriate folder for instructions for specific models:
 - [Aurora 710](aurora-710/README.md)
 - [Aurora 750](aurora-750/README.md)
 - [Aurora 610](aurora-610/README.md)
+- [Aurora 810](aurora-810/README.md)
