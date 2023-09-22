@@ -5,7 +5,7 @@ sudo apt install ipmitool
 
 # Installing kernel modules
 
-``bash
+```bash
 git clone https://github.com/netbergtw/files.git
 cd files/debian-bsps/aurora-810/nba810
 make 
@@ -16,7 +16,7 @@ insmod ./nb_ports_sysfs.ko
 ```
 
 ```bash
-cd cd files/debian-bsps/aurora-810/nct6775
+cd files/debian-bsps/aurora-810/nct6775
 make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
 make -C /lib/modules/$(uname -r)/build M=$(pwd) modules_install
 depmod -a
