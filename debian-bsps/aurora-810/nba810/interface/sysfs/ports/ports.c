@@ -10,6 +10,8 @@
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/errno.h>
+#include <linux/mutex.h>
+#include <linux/delay.h>
 
 #include "ports.h"
 
@@ -22,10 +24,13 @@ extern int nb_port_reset_set(uint64_t *buf, int port_num);
 extern int nb_port_rxlos_get(uint64_t *buf, int port_num);
 extern int nb_port_i2c_get(uint16_t *buf, int port_num, uint16_t addr, uint16_t reg);
 extern int nb_port_i2c_set(uint16_t *buf, int port_num, uint16_t addr, uint16_t reg);
+extern int nb_port_xcvr_get(uint16_t *buf, int port_num, uint16_t reg);
+extern int nb_port_xcvr_set(uint16_t *buf, int port_num, uint16_t reg);
 
 static int loglv = 0x6;
 
 static struct ports_t *ports_p = NULL;
+struct mutex eeprom_lock;
 
 /* [QSFP attributes]
  *
@@ -33,8 +38,7 @@ static struct ports_t *ports_p = NULL;
  *  /sys/class/ports/<Port#>/lpmod      [RW]
  *  /sys/class/ports/<Port#>/reset      [RW]
  *  /sys/class/ports/<Port#>/rxlos      [RO]
- *  /sys/class/ports/<Port#>/i2c_get    [RW]
- *  /sys/class/ports/<Port#>/i2c_set    [WO]
+ *  /sys/class/ports/<Port#>/eeprom     [RO]
  */
 static ssize_t present_show(struct device *dev,
 					        struct device_attribute *attr,
@@ -145,55 +149,254 @@ static ssize_t rxlos_show(struct device *dev,
 } 
 static DEVICE_ATTR_RO(rxlos);
 
-
-// static ssize_t i2c_get_show(struct device *dev,
-//                             struct device_attribute *attr,
-//                             char *buf)
-// {
-//     PORT_ERR("Function not ready: i2c_get_show\n");
-//     return -1;
-// } 
-
-
-// static ssize_t i2c_get_store(struct device * dev, 
-//                              struct device_attribute *attr,
-//                              const char * buf, size_t n)
-// {
-//     PORT_ERR("Function not ready: i2c_get_store\n");
-//     return -1;
-// } 
-// static DEVICE_ATTR_RW(i2c_get);
-
-
-// static ssize_t i2c_set_store(struct device * dev, 
-//                              struct device_attribute *attr,
-//                              const char * buf, size_t n)
-// {
-//     PORT_ERR("Function not ready: i2c_get_store\n");
-//     return -1;
-// } 
-// static DEVICE_ATTR_WO(i2c_set);
-
-
 static struct attribute *ports_qsfp_l2_attrs[] = {
-	&dev_attr_present.attr,
-	&dev_attr_lpmod.attr,
-    &dev_attr_reset.attr,
-    &dev_attr_rxlos.attr,
-    // &dev_attr_i2c_get.attr,
-    // &dev_attr_i2c_set.attr,
+        &dev_attr_present.attr,
+        &dev_attr_lpmod.attr,
+        &dev_attr_reset.attr,
+        &dev_attr_rxlos.attr,
 	NULL
 };
 
+static int _select_qsfp_upper_page(int port_num, uint16_t page_num)
+{
+    int err;
+    uint16_t data = page_num;
+    err = nb_port_xcvr_set(&data, port_num, QSFP_REG_PAGE_SELECT);
+    if (err < 0) {
+        PORT_ERR("_select_qsfp_upper_page fail! <page>:%d <err>:%d\n", page_num, err);
+    }
+    return err;
+}
+
+
+static int _dump_qsfp_lower_page(int port_num, uint8_t *data)
+{
+    int i, err;
+    uint16_t tmp;
+
+    // Byte 0 ~ 127
+    for (i=0; i<QSFP_VAL_PAGE_SIZE; i++) {
+        err = nb_port_xcvr_get(&tmp, port_num, i);
+        if (err < 0) {
+            PORT_ERR("fail! <offs>:%d <err>:%d\n",i, err);
+            return err;
+        }
+        data[i] = (uint8_t)(tmp & 0xff);
+    }
+    return 0;
+}
+
+
+static int _dump_qsfp_upper_page(int port_num, uint16_t page_num, uint8_t *data)
+{
+    int reg_offs, i, err;
+    uint16_t tmp;
+
+    if (_select_qsfp_upper_page(port_num, page_num) < 0) {
+        return -EIO;
+    }
+    // Byte 128 ~ 255
+    for (i=0; i<QSFP_VAL_PAGE_SIZE; i++) {
+        reg_offs = QSFP_VAL_PAGE_SIZE + i;
+        err = nb_port_xcvr_get(&tmp, port_num, reg_offs);
+        if (err < 0) {
+            PORT_ERR("fail! <offs>:%d <err>:%d\n",i, err);
+            return err;
+        }
+        data[i] = (uint8_t)(tmp & 0xff);
+    }
+    return 0;
+}
+
+static ssize_t unpaged_eeprom_read(int port_num, char *buf, loff_t off, size_t count)
+{
+    int reg_offs, err;
+    uint16_t tmp;
+    uint8_t eeprom[QSFP_VAL_EEPROM_SIZE_UNPAGED] = {0};
+
+    mutex_lock(&eeprom_lock);
+    for (reg_offs=0; reg_offs<QSFP_VAL_EEPROM_SIZE_UNPAGED; reg_offs++) {
+        err = nb_port_xcvr_get(&tmp, port_num, reg_offs);
+        if (err < 0) {
+            goto err_unpaged_eeprom_read;
+        }
+        eeprom[reg_offs] = (uint8_t)(tmp & 0xff);
+    }
+    mutex_unlock(&eeprom_lock);
+    return memory_read_from_buffer(buf, count, &off, eeprom, sizeof(eeprom));
+
+err_unpaged_eeprom_read:
+    mutex_unlock(&eeprom_lock);
+    PORT_DBG("fail! <offs>:0x%x <err>:%d\n",reg_offs, err);
+    return err;
+}
+
+static ssize_t qsfp_paging_eeprom_read(int port_num, char *buf, loff_t off, size_t count)
+{
+    int index, i, j;
+    uint8_t tmp[QSFP_VAL_PAGE_SIZE] = {0};
+    uint8_t eeprom[QSFP_VAL_EEPROM_SIZE_PAGED_SFF] = {0};
+
+    index = 0;
+    mutex_lock(&eeprom_lock);
+    if (_dump_qsfp_lower_page(port_num, tmp) < 0) {
+        goto err_qsfp_paging_eeprom_read;
+    }
+    for (i=0; i<QSFP_VAL_PAGE_SIZE; i++) {
+        eeprom[index] = tmp[i];
+        index++;
+    }
+    for (j=0; j<QSFP_VAL_SFF_UPPAGE_TOTAL; j++) {
+        if (_dump_qsfp_upper_page(port_num, j, tmp) < 0) {
+            goto err_qsfp_paging_eeprom_read;
+        }
+        for (i=0; i<QSFP_VAL_PAGE_SIZE; i++) {
+            eeprom[index] = tmp[i];
+            index++;
+        }
+    }
+    mutex_unlock(&eeprom_lock);
+    return memory_read_from_buffer(buf, count, &off, eeprom, sizeof(eeprom));
+
+err_qsfp_paging_eeprom_read:
+    mutex_unlock(&eeprom_lock);
+    return -EIO;
+}
+
+static ssize_t qsfp_eeprom_read(int port_num, char *buf, loff_t off, size_t count)
+{
+    int err;
+    uint16_t data;
+
+    err = nb_port_xcvr_get(&data, port_num, QSFP_REG_PAGE_IMPLEMENTED);
+    if (err < 0) {
+        PORT_ERR("get QSFP_REG_PAGE_IMPLEMENTED fail! <err>:%d\n",err);
+        return err;
+    }
+    /* SFF-8363 6.2.2
+     * Upper memory flat or paged.
+     * Bit 2 = 1b: Flat memory (lower and upper pages 00h only)
+     * Bit 2 = 0b: Paging (at least upper page 03h implemented)
+     */
+    if (data & QSFP_VAL_FLAT_MEM_BIT_SFF) {
+        return unpaged_eeprom_read(port_num, buf, off, count);
+    } else {
+        return qsfp_paging_eeprom_read(port_num, buf, off, count);
+    }
+}
+
+
+static ssize_t cmis_eeprom_read(int port_num, char *buf, loff_t off, size_t count)
+{
+    int err;
+    uint16_t data;
+
+    err = nb_port_xcvr_get(&data, port_num, QSFP_REG_PAGE_IMPLEMENTED);
+    if (err < 0) {
+        PORT_ERR("get QSFP_REG_PAGE_IMPLEMENTED fail! <err>:%d\n",err);
+        return err;
+    }
+    /* CMIS 8.2.1
+     * Upper memory flat or paged.
+     * 0b=Paged memory (pages 00h, 01h, 02h, 10h and 11h are implemented)
+     * 1b=Flat memory (only page 00h implemented)
+     */
+    if (data & QSFP_VAL_FLAT_MEM_BIT_CMIS) {
+        return unpaged_eeprom_read(port_num, buf, off, count);
+    } else {
+        /* Due to PAGE_SIZE limitation,
+         * We uses the same dump behavior with QSFP paging EEPROM
+         */
+        return qsfp_paging_eeprom_read(port_num, buf, off, count);
+    }
+}
+
+static int _get_module_id(int port_num)
+{
+    int err, i;
+    /* Base on SFF & CMIS
+     * Module init_t max = 2 sec
+     */
+    int retry = 10;
+    int period_ms = 200;
+    uint16_t retval = 0;
+    bool is_fail = true;
+
+    for (i=0; i<retry; i++) {
+        err = nb_port_xcvr_get(&retval, port_num, QSFP_REG_IDENTIFIER);
+        if ((err >= 0) && (retval != 0)) {
+            is_fail = false;
+            break;
+        }
+        mdelay(period_ms);
+    }
+    if (is_fail) {
+        PORT_ERR("Module can't be identified! <id>:0x%x <err>:%d\n", retval, err);
+        return -EINVAL;
+    }
+    return (int)retval;
+}
+
+static ssize_t eeprom_read(struct file *file,
+                           struct kobject *kobj,
+                           struct bin_attribute *attr,
+                           char *buf, loff_t off, size_t count)
+{
+    int err;
+    int identifier;
+    uint64_t presnet;
+
+    struct device *dev = kobj_to_dev(kobj);
+    struct subdev_t *subdev_p = dev_get_drvdata(dev);
+
+    // Check present status
+    err = nb_port_present_get(&presnet, subdev_p->port_num);
+    if (err < 0) {
+        PORT_ERR("nb_port_present_get fail! <err>:%d\n",err);
+        return err;
+    }
+    if ((presnet & 0x1) == 0 ) {
+        // not present
+        return -ENXIO;
+    }
+
+    // Identify module type
+    identifier = _get_module_id(subdev_p->port_num);
+    if (err < 0) {
+        return err;
+    }
+    switch (identifier) {
+        case QSFP_VAL_ID_QSFP_Plus:
+        case QSFP_VAL_ID_QSFP_28:
+            return qsfp_eeprom_read(subdev_p->port_num, buf, off, count);
+
+        case QSFP_VAL_ID_QSFP_DD:
+        case QSFP_VAL_ID_QSFP_CMIS:
+            return cmis_eeprom_read(subdev_p->port_num, buf, off, count);
+
+        default:
+            PORT_ERR("Invalid identifier:0x%x\n", identifier);
+            break;
+    }
+    return -EINVAL;
+}
+BIN_ATTR_RO(eeprom, 0);
+
+
+static struct bin_attribute *ports_qsfp_l2_bin_attrs[] = {
+    &bin_attr_eeprom,
+    NULL,
+};
+
 static const struct attribute_group ports_qsfp_l2_group = {
-	.attrs = ports_qsfp_l2_attrs,
+        .attrs = ports_qsfp_l2_attrs,
+    .bin_attrs = ports_qsfp_l2_bin_attrs,
 };
 
 static const struct attribute_group *ports_qsfp_l2_groups[] = {
-	&ports_qsfp_l2_group,
-	NULL,
+        &ports_qsfp_l2_group,
+        NULL,
 };
-
 
 /* [Class attributes]
  *
@@ -501,6 +704,7 @@ static int __init ports_sysfs_init(void)
         PORT_ERR("create_ports_interface fail!\n");
         goto err_init_3;
     }
+    mutex_init(&eeprom_lock);
 
     PORT_INFO("Log level settings: ERR=%d INFO=%d DBG=%d\n", 
               (loglv & 0x4)>>2, (loglv & 0x2)>>1, (loglv & 0x1) );
@@ -520,6 +724,7 @@ err_init_1:
 static void __exit ports_sysfs_exit(void)
 {
     PORT_DBG("... GO\n");
+    mutex_destroy(&eeprom_lock);
     delete_ports_interface();
     delete_ports_object();
     class_unregister(&ports_class);
