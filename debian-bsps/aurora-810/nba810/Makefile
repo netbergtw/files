@@ -27,3 +27,6 @@ all:
 
 clean:
 	$(MAKE) -C /lib/modules/$(KSRC)/build M=$(shell pwd) clean
+
+install:
+	$(MAKE) -C /lib/modules/$(KSRC)/build M=$(shell pwd) modules_install
