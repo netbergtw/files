@@ -61,3 +61,4 @@ See the appropriate folder for instructions for specific models:
 - [Aurora 610](aurora-610/README.md)
 - [Aurora 810](aurora-810/README.md)
 - [Aurora 621](aurora-621/README.md)
+- [Aurora 221](aurora-221/README.md)
