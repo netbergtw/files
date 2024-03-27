@@ -30,13 +30,14 @@ Agree to a weak password (onie/onie is the default user/password).
 
 # Post-intallation steps:
 
-## Update repos and install the latest kernel:
+## Update repos and install the latest kernel (tested with 5.15.0-91):
 ```bash
  sudo apt update
  sudo apt upgrade
  sudo apt install --install-recommends linux-generic-hwe-20.04
  sudo reboot
 ```
+
 ## Install additional components:
 ```bash
  sudo apt install openssh-server build-essential git i2c-tools
