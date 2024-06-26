@@ -169,9 +169,9 @@ struct cpld_data {
 
 /* CPLD device id and data */
 static const struct i2c_device_id aurora_830_cpld_id[] = {
-    { "aurora_830_32d_cpld1",  cpld1 },
-    { "aurora_830_32d_cpld2",  cpld2 },
-    { "aurora_830_32d_cpld3",  cpld3 },
+    { "aurora_830_cpld1",  cpld1 },
+    { "aurora_830_cpld2",  cpld2 },
+    { "aurora_830_cpld3",  cpld3 },
     {}
 };
 
