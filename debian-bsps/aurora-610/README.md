@@ -1,4 +1,4 @@
-# Installing i2c_utils.sh
+# Installing i2c_(de)init.sh
 ```bash
  sudo wget https://github.com/netbergtw/files/raw/master/debian-bsps/aurora-610/i2c_init.sh -O /usr/sbin/i2c_init.sh
  sudo chmod +x /usr/sbin/i2c_init.sh
