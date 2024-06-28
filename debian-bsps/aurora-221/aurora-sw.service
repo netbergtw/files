@@ -1,0 +1,14 @@
+[Unit]
+Documentation=man:systemd-sysv-generator(8)
+SourcePath=/etc/init.d/sonic-platform-netberg-aurora-sw
+Description=LSB: Setup Netberg Aurora Switches
+
+[Service]
+Restart=no
+TimeoutSec=1min
+
+ExecStart=/usr/sbin/i2c_init.sh
+
+[Install]
+Alias=sonic-platform-netberg-aurora-sw.target
+WantedBy=multi-user.target
