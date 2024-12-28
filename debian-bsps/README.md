@@ -6,9 +6,20 @@ Please refer to https://netbergtw.com/top-support/articles/onie-recovery-on-x86-
 
 # Ubuntu 24.04 installation
 
-You can a get ready to use Ubuntu 24.04 [image](http://www.netbergtw.com/wp-content/uploads/Files/ubuntu-focal-amd64-mini-ONIE.bin)
+You can a get ready to use Ubuntu 24.04 [image](http://www.netbergtw.com/wp-content/uploads/Files/ubuntu-noble-amd64-mini-ONIE.bin)
 and [user-data](user-data), [meta-data](meta-data), [vendor-data](vendor-data)
 for autoinstall proccess.
+
+Install OS with the `onie-nos-install` command from a remote or local source 
+(don’t forget to put data files and Ubuntu installation 
+[iso](https://releases.ubuntu.com/24.04/ubuntu-24.04.1-live-server-amd64.iso) 
+**near the image**).
+
+ onie-nos-install http://192.168.0.4:8000/ubuntu-focal-amd64-mini-ONIE.bin
+
+Also you can redefine ubuntu iso name and location with following:
+
+ export os_iso_url=http://your.local.server/ubuntu-24.04.1-live-server-amd64.iso
 
 ## Post-intallation steps:
 
