@@ -1,0 +1,15 @@
+#cloud-config
+autoinstall:
+  version: 1
+  identity:
+    hostname: onie
+    username: onie
+    password: $6$NPBqwV9HskNwCAUs$8YLTXN3kWD0pQbzbZXqWpw0wGXmSQji2o2kDuc28ds.lDH2VQjALfRHI0Pp2H1sQ3dR3ir735pfiu2QVEtdDU/
+  ssh:
+    install-server: yes
+    allow-pw: yes
+  storage:
+    layout:
+      name: direct
+  system_upgrade:
+    enabled: True

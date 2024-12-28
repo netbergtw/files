@@ -4,6 +4,39 @@ We are going through a standard ONIE procedure.
 
 Please refer to https://netbergtw.com/top-support/articles/onie-recovery-on-x86-enabled-netberg-aurora-switches/ if ONIE is missing.
 
+# Ubuntu 24.04 installation
+
+You can a get ready to use Ubuntu 24.04 [image](http://www.netbergtw.com/wp-content/uploads/Files/ubuntu-focal-amd64-mini-ONIE.bin)
+and [user-data](user-data), [meta-data](meta-data), [vendor-data](vendor-data)
+for autoinstall proccess.
+
+## Post-intallation steps:
+
+### Update repos:
+```bash
+ sudo apt update
+ sudo apt upgrade
+ sudo reboot
+```
+
+### Install additional components:
+```bash
+ sudo apt install openssh-server build-essential git i2c-tools
+```
+
+### Build optoe driver
+```bash
+ git clone https://github.com/netbergtw/oom.git --branch kern-68 --single-branch
+ cd oom/optoe
+ echo "ccflags-y := -DLATEST_KERNEL68" > Makefile
+ echo "obj-m := optoe.o" >> Makefile
+ make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
+ sudo make -C /lib/modules/$(uname -r)/build M=$(pwd) modules_install
+ sudo depmod
+```
+
+# Ubuntu 20.04 installation
+
 You can [make your own ONIE image](https://github.com/opencomputeproject/onie/blob/master/contrib/debian-iso/README.md) 
 with the preseed file or get a ready to use Ubuntu 20.04 [image](http://www.netbergtw.com/wp-content/uploads/Files/ubuntu-focal-amd64-mini-ONIE.bin) 
 and [preseed](debian-preseed.txt):
@@ -28,9 +61,9 @@ Install OS with the `onie-nos-install` command from a remote or local source (do
 Select the proper network device: e.g. enp8s0: Intel Corporation I210 Gigabit Network Connection.
 Agree to a weak password (onie/onie is the default user/password).
 
-# Post-intallation steps:
+## Post-intallation steps:
 
-## Update repos and install the latest kernel (tested with 5.15.0-91):
+### Update repos and install the latest kernel (tested with 5.15.0-91):
 ```bash
  sudo apt update
  sudo apt upgrade
@@ -38,11 +71,11 @@ Agree to a weak password (onie/onie is the default user/password).
  sudo reboot
 ```
 
-## Install additional components:
+### Install additional components:
 ```bash
  sudo apt install openssh-server build-essential git i2c-tools
 ```
-## Build optoe driver
+### Build optoe driver
 ```bash
  git clone https://github.com/opencomputeproject/oom.git
  cd oom/optoe
