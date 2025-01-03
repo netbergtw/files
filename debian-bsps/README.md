@@ -16,7 +16,7 @@ Install OS with the `onie-nos-install` command from a remote or local source
 **near the image**).
 
 ```bash
- onie-nos-install http://192.168.0.4:8000/ubuntu-focal-amd64-mini-ONIE.bin
+ onie-nos-install http://192.168.0.4:8000/ubuntu-noble-amd64-mini-ONIE.bin
 ```
 
 Also you can redefine ubuntu iso name and location with the following:
