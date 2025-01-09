@@ -8,6 +8,8 @@
 #include <linux/err.h>
 #include <linux/mutex.h>
 #include <linux/delay.h>
+#include <linux/version.h>
+
 #include "x86-64-netberg-aurora-621-cpld.h"
 
 #ifdef DEBUG
@@ -928,8 +930,12 @@ static void cpld_remove_client(struct i2c_client *client)
 }
 
 /* cpld drvier probe */
-static int cpld_probe(struct i2c_client *client,
-                    const struct i2c_device_id *dev_id)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,8,0)
+static int cpld_probe(struct i2c_client *client)
+#else
+static int cpld_probe(struct i2c_client *client, 
+    const struct i2c_device_id *dev_id)
+#endif
 {
     int status;
     struct cpld_data *data = NULL;
@@ -953,6 +959,10 @@ static int cpld_probe(struct i2c_client *client,
     }
 
     /* get cpld id from device */
+    dev_info(&client->dev,
+            "getting cpld id (0x%x) at addr (0x%x)\n", 
+	    CPLD_ID_REG, client->addr);
+
     ret = i2c_smbus_read_byte_data(client, CPLD_ID_REG);
 
     if (ret < 0) {
@@ -962,6 +972,7 @@ static int cpld_probe(struct i2c_client *client,
         status = -EIO;
         goto exit;
     }
+    dev_info(&client->dev, "cpld id %d(device) \n", ret);
 
     if (INVALID(ret, cpld1, cpld2)) {
         dev_info(&client->dev,
@@ -976,7 +987,7 @@ static int cpld_probe(struct i2c_client *client,
             data->index);
 #endif
 
-    data->index = dev_id->driver_data;
+    data->index = ret;
 
     /* register sysfs hooks for different cpld group */
     dev_info(&client->dev, "probe cpld with index %d\n", data->index);
@@ -1017,7 +1028,13 @@ exit:
 }
 
 /* cpld drvier remove */
-static int cpld_remove(struct i2c_client *client)
+static 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+void 
+#else
+int
+#endif
+cpld_remove(struct i2c_client *client)
 {
     struct cpld_data *data = i2c_get_clientdata(client);
 
@@ -1029,9 +1046,11 @@ static int cpld_remove(struct i2c_client *client)
         sysfs_remove_group(&client->dev.kobj, &cpld2_group);
         break;
     }
-
     cpld_remove_client(client);
-    return 0;
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,1,0)
+    return 0
+#endif
 }
 
 static int aurora_621_cpld_read_internal(struct i2c_client *client, u8 reg)
