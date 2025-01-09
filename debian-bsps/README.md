@@ -1,3 +1,8 @@
+- [OS installation](#os-installation)
+- [Ubuntu 24.04](#ubuntu-2404-installation)
+- [Ubuntu 20.04](#ubuntu-2004-installation)
+- [Model dependent steps](#model-dependent-steps)
+
 # OS installation
 
 We are going through a standard ONIE procedure.
@@ -102,7 +107,7 @@ Agree to a weak password (onie/onie is the default user/password).
  sudo depmod
 ```
 
-## Model dependent steps:
+# Model dependent steps
 
 See the appropriate folder for instructions for specific models:
 
