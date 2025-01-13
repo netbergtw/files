@@ -5,7 +5,7 @@ GPIO_OFFSET=0
 
 function set_gpio_offset {
     GPIO_OFFSET=0
-    gpio_base_min=`cat /sys/class/gpio/gpiochip*/base | sort -n | head -1`
+    gpio_base_min=`cat /sys/class/gpio/gpiochip*/base | sort -nr | head -1`
     GPIO_OFFSET=$(($gpio_base_min))
     echo "set GPIO_OFFSET=${GPIO_OFFSET}"
 }
@@ -26,20 +26,18 @@ echo '-2' > /sys/bus/i2c/devices/0-0072/idle_state
 echo pca9546 0x70 > /sys/bus/i2c/devices/i2c-0/new_device
 echo '-2' > /sys/bus/i2c/devices/0-0072/idle_state
 
-
-
 #SYSEEPROM
 echo 24c32 0x56 > /sys/bus/i2c/devices/i2c-0/new_device
-hexdump -C /sys/bus/i2c/devices/0-0056/eeprom
 
 # PS EEPROM
 echo spd 0x50 > /sys/bus/i2c/devices/i2c-2/new_device #PS0
-hexdump -C -n64 -s12  /sys/bus/i2c/devices/2-0050/eeprom
-
 echo spd 0x51 > /sys/bus/i2c/devices/i2c-2/new_device #PS1
-hexdump -C -n64 -s12  /sys/bus/i2c/devices/2-0051/eeprom
 
-#modprobe pmbus
+echo "EEPROM read:"
+sleep 1
+hexdump -C -n160 /sys/bus/i2c/devices/0-0056/eeprom
+hexdump -C -n64 -s12  /sys/bus/i2c/devices/2-0050/eeprom
+hexdump -C -n64 -s12  /sys/bus/i2c/devices/2-0051/eeprom
 
 # PS PMBUS
 echo pmbus 0x58 > /sys/bus/i2c/devices/i2c-2/new_device #PS0
@@ -74,7 +72,6 @@ for((i=${GPIO_OFFSET};i<${GPIO_OFFSET}+8;i++));
 do
     echo $i > /sys/class/gpio/export
 done
-
 
 #RS_TXDIS_0_7
 echo pca9535 0x21 > /sys/bus/i2c/devices/i2c-7/new_device
