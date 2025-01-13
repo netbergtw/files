@@ -9,8 +9,8 @@ sudo apt install lm-sensors
 git clone https://github.com/netbergtw/files.git
 cd files/debian-bsps/aurora-221/nba221
 make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
-make -C /lib/modules/$(uname -r)/build M=$(pwd) modules_install
-depmod -a
+sudo make -C /lib/modules/$(uname -r)/build M=$(pwd) modules_install
+sudo depmod -a
 ```
 
 # Installing init example
