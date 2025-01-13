@@ -28,13 +28,16 @@ echo '-2' > /sys/bus/i2c/devices/0-0072/idle_state
 
 
 
-##SYSEEPROM
+#SYSEEPROM
 echo 24c32 0x56 > /sys/bus/i2c/devices/i2c-0/new_device
+hexdump -C /sys/bus/i2c/devices/0-0056/eeprom
 
-# modprobe eeprom
 # PS EEPROM
 echo spd 0x50 > /sys/bus/i2c/devices/i2c-2/new_device #PS0
+hexdump -C -n64 -s12  /sys/bus/i2c/devices/2-0050/eeprom
+
 echo spd 0x51 > /sys/bus/i2c/devices/i2c-2/new_device #PS1
+hexdump -C -n64 -s12  /sys/bus/i2c/devices/2-0051/eeprom
 
 #modprobe pmbus
 
