@@ -3,13 +3,6 @@
 
 GPIO_OFFSET=0
 
-function set_gpio_offset {
-    GPIO_OFFSET=0
-    gpio_base_min=`cat /sys/class/gpio/gpiochip*/base | sort -nr | head -1`
-    GPIO_OFFSET=$(($gpio_base_min))
-    echo "set GPIO_OFFSET=${GPIO_OFFSET}"
-}
-
 #Load modules
 modprobe i2c-mux-pca954x
 
@@ -67,7 +60,8 @@ modprobe gpio-pca953x
 
 #MOD_ABS_0_7
 echo pca9535 0x20 > /sys/bus/i2c/devices/i2c-6/new_device
-set_gpio_offset
+GPIO_OFFSET=`cat /sys/bus/i2c/devices/6-0020/gpio/gpiochip*/base`
+echo $GPIO_OFFSET
 for((i=${GPIO_OFFSET};i<${GPIO_OFFSET}+8;i++));
 do
     echo $i > /sys/class/gpio/export
@@ -75,7 +69,8 @@ done
 
 #RS_TXDIS_0_7
 echo pca9535 0x21 > /sys/bus/i2c/devices/i2c-7/new_device
-set_gpio_offset
+GPIO_OFFSET=`cat /sys/bus/i2c/devices/7-0021/gpio/gpiochip*/base`
+echo $GPIO_OFFSET
 for((i=${GPIO_OFFSET}+8;i<${GPIO_OFFSET}+16;i++));
 do
     echo $i > /sys/class/gpio/export
@@ -85,8 +80,8 @@ done
 
 #9535_TXFLT_RXLOS_0_7
 echo pca9535 0x22 > /sys/bus/i2c/devices/i2c-8/new_device
-set_gpio_offset
-
+GPIO_OFFSET=`cat /sys/bus/i2c/devices/8-0022/gpio/gpiochip*/base`
+echo $GPIO_OFFSET
 for((i=${GPIO_OFFSET};i<${GPIO_OFFSET}+16;i++));
 do
     echo $i > /sys/class/gpio/export
@@ -94,7 +89,6 @@ done
 
 #FAN_DIR
 echo tca9554 0x21 > /sys/bus/i2c/devices/i2c-3/new_device
-set_gpio_offset
 
 modprobe aurora-221-cpld
 echo aurora-221-cpld 0x33 > /sys/bus/i2c/devices/i2c-0/new_device
