@@ -7,6 +7,7 @@
 #include <linux/hwmon-sysfs.h>
 #include <linux/err.h>
 #include <linux/mutex.h>
+#include <linux/version.h>
 #include "x86-64-netberg-aurora-830-cpld.h"
 
 #ifdef DEBUG
@@ -1158,8 +1159,12 @@ static void aurora_830_cpld_remove_client(struct i2c_client *client)
 }
 
 /* cpld drvier probe */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,8,0)
+static int aurora_830_cpld_probe(struct i2c_client *client)
+#else
 static int aurora_830_cpld_probe(struct i2c_client *client,
-                    const struct i2c_device_id *dev_id)
+    const struct i2c_device_id *dev_id)
+#endif
 {
     int status;
     struct cpld_data *data = NULL;
@@ -1184,6 +1189,10 @@ static int aurora_830_cpld_probe(struct i2c_client *client,
     }
 
     /* get cpld id from device */
+    dev_info(&client->dev,
+            "getting cpld id (0x%x) at addr (0x%x)\n",
+            CPLD_ID_REG, client->addr);
+
     ret = i2c_smbus_read_byte_data(client, CPLD_ID_REG);
 
     if (ret < 0) {
@@ -1193,17 +1202,16 @@ static int aurora_830_cpld_probe(struct i2c_client *client,
         status = -EIO;
         goto exit;
     }
+    dev_info(&client->dev, "cpld id %d(device) \n", ret); /*CPLD_ID_ID_GET(ret,  idx);*/
 
-    CPLD_ID_ID_GET(ret,  idx);
-
-    if (INVALID(idx, cpld1, cpld3)) {
+    if (INVALID(ret, cpld1, cpld3)) {
         dev_info(&client->dev,
             "cpld id %d(device) not valid\n", idx);
         //status = -EPERM;
         //goto exit;
     }
 
-    data->index = dev_id->driver_data;
+    data->index = ret;/* dev_id->driver_data;*/
 
     /* register sysfs hooks for different cpld group */
     dev_info(&client->dev, "probe cpld with index %d\n", data->index);
@@ -1250,8 +1258,14 @@ exit:
     return status;
 }
 
-/* cpld drvier remove */
-static int aurora_830_cpld_remove(struct i2c_client *client)
+/* cpld driver remove */
+static
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0)
+void
+#else
+int
+#endif
+aurora_830_cpld_remove(struct i2c_client *client)
 {
     struct cpld_data *data = i2c_get_clientdata(client);
 
@@ -1268,7 +1282,10 @@ static int aurora_830_cpld_remove(struct i2c_client *client)
     }
 
     aurora_830_cpld_remove_client(client);
-    return 0;
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,1,0)
+    return 0
+#endif
 }
 
 MODULE_DEVICE_TABLE(i2c, aurora_830_cpld_id);
