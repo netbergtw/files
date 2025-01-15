@@ -1284,7 +1284,7 @@ aurora_830_cpld_remove(struct i2c_client *client)
     aurora_830_cpld_remove_client(client);
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6,1,0)
-    return 0
+    return 0;
 #endif
 }
 
