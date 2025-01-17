@@ -10,5 +10,5 @@ TimeoutSec=1min
 ExecStart=/usr/sbin/i2c_init.sh
 
 [Install]
-Alias=sonic-platform-netberg-aurora-sw.target
+Alias=sonic-platform-netberg-aurora-sw.service
 WantedBy=multi-user.target
