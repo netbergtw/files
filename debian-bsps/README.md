@@ -33,6 +33,12 @@ the following command:
 
 ## Post-intallation steps:
 
+Do not load the ast module until you know what you are doing.
+```bash
+echo "blacklist ast" >> /etc/modprobe.d/blacklist.conf
+```
+
+
 ### Update repos:
 ```bash
  sudo apt update
