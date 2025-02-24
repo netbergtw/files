@@ -21,7 +21,7 @@ echo pca9548 0x72 > /sys/bus/i2c/devices/i2c-0/new_device
 echo '-2' > /sys/bus/i2c/devices/0-0072/idle_state
 
 ##QSFPDD leafs
-for I in {10..13}; 
+for I in {9..12}; 
 do 
 	echo pca9548 0x76 > /sys/bus/i2c/devices/i2c-$I/new_device
 	echo '-2' > /sys/bus/i2c/devices/$I-0076/idle_state
@@ -29,7 +29,7 @@ done
 
 ##QSFPDD EEPROMs
 echo "QSFPDD EEPROMs"
-for I in {18..49}; 
+for I in {17..48}; 
 do 
     echo optoe3 0x50 > /sys/bus/i2c/devices/i2c-$I/new_device
     echo port$(($I-18)) > /sys/bus/i2c/devices/$I-0050/port_name
@@ -47,7 +47,6 @@ echo sfp3 > /sys/bus/i2c/devices/15-0050/port_name
 cat /sys/bus/i2c/devices/15-0050/port_name
 
 modprobe x86_64_netberg_aurora_830_cpld
-echo aurora_830_cpld1 0x30 > /sys/bus/i2c/devices/i2c-3/new_device
-echo aurora_830_cpld2 0x31 > /sys/bus/i2c/devices/i2c-3/new_device
-echo aurora_830_cpld3 0x32 > /sys/bus/i2c/devices/i2c-3/new_device
-
+echo aurora_830_cpld1 0x30 > /sys/bus/i2c/devices/i2c-2/new_device
+echo aurora_830_cpld2 0x31 > /sys/bus/i2c/devices/i2c-2/new_device
+echo aurora_830_cpld3 0x32 > /sys/bus/i2c/devices/i2c-2/new_device
