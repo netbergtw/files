@@ -113,6 +113,17 @@ Agree to a weak password (onie/onie is the default user/password).
  sudo depmod
 ```
 
+# Optional steps
+## Enable GRUB menu
+Set following vars: 
+```
+GRUB_TIMEOUT_STYLE=menu
+GRUB_TIMEOUT=5
+```
+in /etc/default/grub
+```
+# sudo update-grub
+```
 # Model dependent steps
 
 See the appropriate folder for instructions for specific models:
