@@ -20,7 +20,7 @@ echo pca9546 0x70 > /sys/bus/i2c/devices/i2c-0/new_device
 echo '-2' > /sys/bus/i2c/devices/0-0072/idle_state
 
 #SYSEEPROM
-echo 24c32 0x56 > /sys/bus/i2c/devices/i2c-0/new_device
+echo 24c32 0x56 > /sys/bus/i2c/devices/i2c-1/new_device
 
 # PS EEPROM
 echo spd 0x50 > /sys/bus/i2c/devices/i2c-2/new_device #PS0
@@ -28,7 +28,7 @@ echo spd 0x51 > /sys/bus/i2c/devices/i2c-2/new_device #PS1
 
 echo "EEPROM read:"
 sleep 1
-hexdump -C -n160 /sys/bus/i2c/devices/0-0056/eeprom
+hexdump -C -n160 /sys/bus/i2c/devices/1-0056/eeprom
 hexdump -C -n64 -s12  /sys/bus/i2c/devices/2-0050/eeprom
 hexdump -C -n64 -s12  /sys/bus/i2c/devices/2-0051/eeprom
 
