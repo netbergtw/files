@@ -48,7 +48,7 @@ echo "blacklist ast" >> /etc/modprobe.d/blacklist.conf
 
 ### Install additional components:
 ```bash
- sudo apt install openssh-server build-essential git i2c-tools
+ sudo apt install openssh-server build-essential git i2c-tools ipmitool
 ```
 
 ### Build optoe driver
