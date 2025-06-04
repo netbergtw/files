@@ -1,8 +1,3 @@
-# Installing IPMItool
-```bash
-sudo apt install ipmitool
-```
-
 # Installing kernel modules
 
 ```bash
