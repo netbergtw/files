@@ -37,6 +37,15 @@ do
 done
 echo "done"
 
+##SFP+ leaf
+echo pca9548 0x73 > /sys/bus/i2c/devices/i2c-14/new_device
+echo '-2' > /sys/bus/i2c/devices/14-0073/idle_state
+
+##SFP+ EEPROMs
+echo optoe2 0x50 > /sys/bus/i2c/devices/i2c-51/new_device
+echo sfp-mgmt > /sys/bus/i2c/devices/51-0050/port_name
+cat /sys/bus/i2c/devices/51-0050/port_name
+
 modprobe x86_64_netberg_aurora_721_cpld
 echo aurora_721_cpld1 0x30 > /sys/bus/i2c/devices/i2c-2/new_device
 echo aurora_721_cpld2 0x31 > /sys/bus/i2c/devices/i2c-2/new_device
