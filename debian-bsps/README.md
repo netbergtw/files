@@ -120,10 +120,27 @@ Set following vars:
 GRUB_TIMEOUT_STYLE=menu
 GRUB_TIMEOUT=5
 ```
-in /etc/default/grub
+in ``/etc/default/grub``
 ```
 # sudo update-grub
 ```
+
+## Unneeded services
+
+Switch off some unnecessary services:
+```
+systemctl disable setvtrgb.service
+systemctl disable ModemManager
+```
+In any way you can investigate need for other services  
+```
+systemd-analyze blame
+```
+Also check that you start only needed interfaces in
+``/etc/netplan/00-installer-config.yaml``
+
+to avoid boot-up delays. 
+
 # Model dependent steps
 
 See the appropriate folder for instructions for specific models:
