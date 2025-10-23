@@ -1,6 +1,5 @@
 #!/bin/bash
-# Netberg Aurora 621 basic init 
-
+#Netberg Aurora 621 basic init 
 GPIO_OFFSET=0
 
 function set_gpio_offset {
@@ -10,24 +9,35 @@ function set_gpio_offset {
     echo "set GPIO_OFFSET=${GPIO_OFFSET}"
 }
 
+#Default behavior 
+I2C_ISMT_ROOT=0 #0x19ac
+I2C_I801_ROOT=1 #0x19df
+
+if [[ "0x19df" == $(cat /sys/bus/i2c/devices/i2c-0/device/device) ]]; then
+    I2C_ISMT_ROOT=1
+    I2C_I801_ROOT=0  
+fi
+
+echo "I2C_ISMT_ROOT=$I2C_ISMT_ROOT, I2C_I801_ROOT=$I2C_I801_ROOT"
+
 #Load modules
 modprobe i2c-mux-pca954x
 modprobe optoe
 
 #Init CPU_HOST_I2C
-echo pca9548 0x70 > /sys/bus/i2c/devices/i2c-0/new_device 
-echo pca9548 0x71 > /sys/bus/i2c/devices/i2c-0/new_device
+echo pca9548 0x70 > /sys/bus/i2c/devices/i2c-$I2C_ISMT_ROOT/new_device 
+echo pca9548 0x71 > /sys/bus/i2c/devices/i2c-$I2C_ISMT_ROOT/new_device
 
-echo '-2' > /sys/bus/i2c/devices/0-0070/idle_state
-echo '-2' > /sys/bus/i2c/devices/0-0071/idle_state
+echo '-2' > /sys/bus/i2c/devices/$I2C_ISMT_ROOT-0070/idle_state
+echo '-2' > /sys/bus/i2c/devices/$I2C_ISMT_ROOT-0071/idle_state
 
 ##SYSEEPROM
 echo 24c32 0x53 > /sys/bus/i2c/devices/i2c-5/new_device
 
 #Init CPU_LEG_I2C
 ## SFP root
-echo pca9548 0x72 > /sys/bus/i2c/devices/i2c-1/new_device
-echo '-2' > /sys/bus/i2c/devices/1-0072/idle_state
+echo pca9548 0x72 > /sys/bus/i2c/devices/i2c-$I2C_I801_ROOT/new_device
+echo '-2' > /sys/bus/i2c/devices/$I2C_I801_ROOT-0072/idle_state
 
 ##SFP leafs
 for I in {18..24}; 
