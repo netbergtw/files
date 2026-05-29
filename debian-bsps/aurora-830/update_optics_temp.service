@@ -1,0 +1,6 @@
+[Unit]
+Description=Collect Max Transceiver Temperature for BMC
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/update_optics_temp.sh
