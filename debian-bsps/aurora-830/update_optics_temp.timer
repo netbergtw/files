@@ -2,8 +2,8 @@
 Description=Run Optics Temp Script every 10 seconds
 
 [Timer]
-OnBootSec=10s
-OnUnitActiveSec=10s
+OnBootSec=3s
+OnUnitActiveSec=3s
 AccuracySec=1s
 
 [Install]
