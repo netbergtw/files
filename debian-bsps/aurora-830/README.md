@@ -30,9 +30,9 @@ sudo wget https://github.com/netbergtw/files/raw/refs/heads/master/debian-bsps/a
 
 sudo wget https://github.com/netbergtw/files/raw/refs/heads/master/debian-bsps/aurora-830/update_optics_temp.timer -O /etc/systemd/system/update_optics_temp.timer
 
-systemctl daemon-reload
+sudo systemctl daemon-reload
 
-systemctl enable --now update_optics_temp.timer
+sudo systemctl enable --now update_optics_temp.timer
 
 ```
 
